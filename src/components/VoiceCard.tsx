@@ -1,7 +1,6 @@
-import { Play, Mic } from "lucide-react";
-import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { cn } from "@/lib/utils";
+import { VoicePreview } from "./VoicePreview";
 
 interface Voice {
   name: string;
@@ -32,19 +31,10 @@ export const VoiceCard = ({ voice, isSelected, onSelect, onPlaySample }: VoiceCa
     >
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-bold text-lg">{voice.name}</h3>
-        {voice.preview_url && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="animate-pulse hover:animate-none"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPlaySample(voice.preview_url!);
-            }}
-          >
-            <Play className="h-4 w-4" />
-          </Button>
-        )}
+        <VoicePreview 
+          previewUrl={voice.preview_url} 
+          onPlay={onPlaySample}
+        />
       </div>
       <p className="text-sm text-muted-foreground">
         <strong>المعرف:</strong> {voice.voice_id}

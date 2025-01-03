@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Volume2 } from "lucide-react";
 import { VoiceCard } from "@/components/VoiceCard";
-import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { TextToSpeechForm } from "@/components/TextToSpeechForm";
 
 interface Voice {
   name: string;
@@ -20,14 +17,11 @@ interface Voice {
 const API_KEY = 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9';
 
 const Index = () => {
-  const [text, setText] = useState('');
   const [voices, setVoices] = useState<Voice[]>([]);
   const [filteredVoices, setFilteredVoices] = useState<Voice[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [filter, setFilter] = useState<'all' | 'arabic' | 'other'>('all');
-  const [lastGeneratedAudio, setLastGeneratedAudio] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -94,42 +88,9 @@ const Index = () => {
     }
   };
 
-  const handleRecordingComplete = async (audioBlob: Blob) => {
+  const handleTextToSpeech = async (text: string) => {
     try {
-      const audioUrl = URL.createObjectURL(audioBlob);
-      setLastGeneratedAudio(audioUrl);
-      const audio = new Audio(audioUrl);
-      await audio.play();
-    } catch (error) {
-      toast({
-        title: "خطأ",
-        description: "فشل في تشغيل الصوت المولد",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const convertTextToSpeech = async () => {
-    if (!text) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء إدخال نص أولاً",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!selectedVoiceId) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء اختيار صوت",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setIsPlaying(true);
+      setIsLoading(true);
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}`, {
         method: 'POST',
         headers: {
@@ -153,13 +114,7 @@ const Index = () => {
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      setLastGeneratedAudio(audioUrl);
       const audio = new Audio(audioUrl);
-      
-      audio.onended = () => {
-        setIsPlaying(false);
-      };
-      
       await audio.play();
     } catch (error) {
       toast({
@@ -167,22 +122,8 @@ const Index = () => {
         description: error instanceof Error ? error.message : 'حدث خطأ',
         variant: "destructive"
       });
-      setIsPlaying(false);
-    }
-  };
-
-  const playLastGeneratedAudio = async () => {
-    if (lastGeneratedAudio) {
-      try {
-        const audio = new Audio(lastGeneratedAudio);
-        await audio.play();
-      } catch (error) {
-        toast({
-          title: "خطأ",
-          description: "فشل في تشغيل الصوت",
-          variant: "destructive"
-        });
-      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -190,7 +131,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6 font-sans" dir="rtl">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white animate-fade-in">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
             محول النص إلى كلام
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -198,82 +139,42 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="space-y-6 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 animate-scale-in">
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="أدخل النص هنا..."
-            className="min-h-[120px] text-right glass"
-            dir="rtl"
-          />
-
-          <VoiceRecorder 
-            onRecordingComplete={handleRecordingComplete}
+        <div className="space-y-6 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+          <TextToSpeechForm
             selectedVoiceId={selectedVoiceId}
+            onConvert={handleTextToSpeech}
+            isLoading={isLoading}
           />
-
-          <div className="flex gap-2 justify-center">
-            <Button 
-              onClick={convertTextToSpeech} 
-              disabled={isPlaying} 
-              className="glass"
-            >
-              {isPlaying ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  جاري التشغيل...
-                </>
-              ) : (
-                <>
-                  <Volume2 className="mr-2 h-4 w-4" />
-                  تحويل النص إلى كلام
-                </>
-              )}
-            </Button>
-
-            {lastGeneratedAudio && (
-              <Button
-                onClick={playLastGeneratedAudio}
-                className="glass"
-              >
-                <Volume2 className="mr-2 h-4 w-4" />
-                إعادة تشغيل آخر صوت
-              </Button>
-            )}
-          </div>
         </div>
 
         <div className="space-y-6">
           <div className="flex justify-center gap-2">
             {(['all', 'arabic', 'other'] as const).map((filterType) => (
-              <Button
+              <button
                 key={filterType}
                 onClick={() => setFilter(filterType)}
-                variant={filter === filterType ? "default" : "outline"}
-                className="glass"
+                className={`px-4 py-2 rounded-lg ${
+                  filter === filterType
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-white/30 text-gray-700 dark:text-gray-300'
+                }`}
               >
                 {filterType === 'all' ? 'الكل' : filterType === 'arabic' ? 'العربية' : 'لغات أخرى'}
-              </Button>
+              </button>
             ))}
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredVoices.map((voice) => (
-                <VoiceCard
-                  key={voice.voice_id}
-                  voice={voice}
-                  isSelected={selectedVoiceId === voice.voice_id}
-                  onSelect={setSelectedVoiceId}
-                  onPlaySample={playVoiceSample}
-                />
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredVoices.map((voice) => (
+              <VoiceCard
+                key={voice.voice_id}
+                voice={voice}
+                isSelected={selectedVoiceId === voice.voice_id}
+                onSelect={setSelectedVoiceId}
+                onPlaySample={playVoiceSample}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
