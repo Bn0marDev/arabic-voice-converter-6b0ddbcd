@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { VoiceCard } from "@/components/VoiceCard";
 import { TextToSpeechForm } from "@/components/TextToSpeechForm";
+import { PDFUploader } from "@/components/PDFUploader";
 
 interface Voice {
   name: string;
@@ -22,6 +23,7 @@ const Index = () => {
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'arabic' | 'other'>('all');
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -113,8 +115,9 @@ const Index = () => {
       }
 
       const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+      const audio = new Audio(url);
       await audio.play();
     } catch (error) {
       toast({
@@ -140,6 +143,7 @@ const Index = () => {
         </div>
 
         <div className="space-y-6 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+          <PDFUploader onTextExtracted={handleTextToSpeech} audioUrl={audioUrl} />
           <TextToSpeechForm
             selectedVoiceId={selectedVoiceId}
             onConvert={handleTextToSpeech}
