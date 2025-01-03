@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Card } from "@/components/ui/card";
-import { Loader2, Volume2, Play } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Volume2 } from "lucide-react";
+import { VoiceCard } from "@/components/VoiceCard";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 interface Voice {
   name: string;
@@ -15,6 +15,7 @@ interface Voice {
     accent?: string;
   };
   description?: string;
+  preview_url?: string;
 }
 
 const API_KEY = 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9';
@@ -49,15 +50,15 @@ const Index = () => {
       });
 
       if (!response.ok) {
-        throw new Error(response.status === 401 ? 'Invalid API key' : 'Failed to fetch voices');
+        throw new Error(response.status === 401 ? 'مفتاح API غير صالح' : 'فشل في جلب الأصوات');
       }
 
       const data = await response.json();
       setVoices(data.voices);
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'An error occurred',
+        title: "خطأ",
+        description: error instanceof Error ? error.message : 'حدث خطأ',
         variant: "destructive"
       });
     } finally {
@@ -81,27 +82,54 @@ const Index = () => {
     setFilteredVoices(filtered);
   };
 
-  const selectVoiceById = () => {
-    if (!voiceId) {
+  const playVoiceSample = async (previewUrl: string) => {
+    try {
+      const audio = new Audio(previewUrl);
+      await audio.play();
+    } catch (error) {
       toast({
-        title: "Error",
-        description: "Please enter a voice ID",
+        title: "خطأ",
+        description: "فشل في تشغيل عينة الصوت",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRecordingComplete = async (audioBlob: Blob) => {
+    if (!selectedVoiceId) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار صوت أولاً",
         variant: "destructive"
       });
       return;
     }
 
-    const voice = voices.find(v => v.voice_id === voiceId);
-    if (voice) {
-      setSelectedVoiceId(voiceId);
-      toast({
-        title: "Success",
-        description: `Selected voice: ${voice.name}`,
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob);
+      formData.append('model_id', 'eleven_multilingual_v2');
+
+      const response = await fetch(`https://api.elevenlabs.io/v1/voice-generation/${selectedVoiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': API_KEY,
+        },
+        body: formData
       });
-    } else {
+
+      if (!response.ok) {
+        throw new Error('فشل في معالجة التسجيل الصوتي');
+      }
+
       toast({
-        title: "Error",
-        description: "Voice not found",
+        title: "تم بنجاح",
+        description: "تم معالجة التسجيل الصوتي بنجاح",
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: error instanceof Error ? error.message : 'حدث خطأ أثناء معالجة التسجيل',
         variant: "destructive"
       });
     }
@@ -110,8 +138,8 @@ const Index = () => {
   const convertTextToSpeech = async () => {
     if (!text) {
       toast({
-        title: "Error",
-        description: "Please enter text first",
+        title: "خطأ",
+        description: "الرجاء إدخال نص أولاً",
         variant: "destructive"
       });
       return;
@@ -119,8 +147,8 @@ const Index = () => {
 
     if (!selectedVoiceId) {
       toast({
-        title: "Error",
-        description: "Please select a voice",
+        title: "خطأ",
+        description: "الرجاء اختيار صوت",
         variant: "destructive"
       });
       return;
@@ -146,7 +174,7 @@ const Index = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Server error');
+        throw new Error('خطأ في الخادم');
       }
 
       const audioBlob = await response.blob();
@@ -160,8 +188,8 @@ const Index = () => {
       await audio.play();
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'An error occurred',
+        title: "خطأ",
+        description: error instanceof Error ? error.message : 'حدث خطأ',
         variant: "destructive"
       });
       setIsPlaying(false);
@@ -172,7 +200,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6 font-sans" dir="rtl">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white animate-fade-in">
             محول النص إلى كلام
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -180,31 +208,21 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="space-y-6 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+        <div className="space-y-6 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 animate-scale-in">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="أدخل النص هنا..."
-            className="min-h-[120px] text-right"
+            className="min-h-[120px] text-right glass"
             dir="rtl"
           />
 
-          <div className="flex gap-4 flex-wrap">
-            <Input
-              value={voiceId}
-              onChange={(e) => setVoiceId(e.target.value)}
-              placeholder="أدخل معرف الصوت..."
-              className="flex-1"
-            />
-            <Button onClick={selectVoiceById} variant="outline">
-              اختيار الصوت
-            </Button>
-          </div>
+          <VoiceRecorder onRecordingComplete={handleRecordingComplete} />
 
           <Button 
             onClick={convertTextToSpeech} 
             disabled={isPlaying} 
-            className="w-full"
+            className="w-full glass"
           >
             {isPlaying ? (
               <>
@@ -227,6 +245,7 @@ const Index = () => {
                 key={filterType}
                 onClick={() => setFilter(filterType)}
                 variant={filter === filterType ? "default" : "outline"}
+                className="glass"
               >
                 {filterType === 'all' ? 'الكل' : filterType === 'arabic' ? 'العربية' : 'لغات أخرى'}
               </Button>
@@ -240,30 +259,13 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredVoices.map((voice) => (
-                <Card
+                <VoiceCard
                   key={voice.voice_id}
-                  className={cn(
-                    "p-4 cursor-pointer transition-all duration-300 hover:scale-105",
-                    selectedVoiceId === voice.voice_id && "ring-2 ring-primary"
-                  )}
-                  onClick={() => setSelectedVoiceId(voice.voice_id)}
-                >
-                  <h3 className="font-bold mb-2">{voice.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <strong>المعرف:</strong> {voice.voice_id}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <strong>اللغة:</strong> {voice.labels?.language || 'غير معروف'}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <strong>النوع:</strong> {voice.labels?.accent || 'غير معروف'}
-                  </p>
-                  {voice.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                      {voice.description}
-                    </p>
-                  )}
-                </Card>
+                  voice={voice}
+                  isSelected={selectedVoiceId === voice.voice_id}
+                  onSelect={setSelectedVoiceId}
+                  onPlaySample={playVoiceSample}
+                />
               ))}
             </div>
           )}
