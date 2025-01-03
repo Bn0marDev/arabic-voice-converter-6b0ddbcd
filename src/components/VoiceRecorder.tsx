@@ -5,16 +5,26 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface VoiceRecorderProps {
   onRecordingComplete: (audioBlob: Blob) => void;
+  selectedVoiceId: string | null;
 }
 
-export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
+export const VoiceRecorder = ({ onRecordingComplete, selectedVoiceId }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [isProcesing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
   const startRecording = async () => {
+    if (!selectedVoiceId) {
+      toast({
+        title: "تنبيه",
+        description: "الرجاء اختيار صوت أولاً",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -26,9 +36,44 @@ export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
         }
       };
 
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" });
-        onRecordingComplete(audioBlob);
+        setIsProcessing(true);
+        
+        try {
+          const formData = new FormData();
+          formData.append('audio', audioBlob);
+          formData.append('model_id', 'eleven_multilingual_v2');
+
+          const response = await fetch(`https://api.elevenlabs.io/v1/voice-generation/${selectedVoiceId}`, {
+            method: 'POST',
+            headers: {
+              'xi-api-key': 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9',
+            },
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('فشل في معالجة التسجيل الصوتي');
+          }
+
+          const resultBlob = await response.blob();
+          onRecordingComplete(resultBlob);
+          
+          toast({
+            title: "تم بنجاح",
+            description: "تم معالجة التسجيل الصوتي بنجاح",
+          });
+        } catch (error) {
+          toast({
+            title: "خطأ",
+            description: error instanceof Error ? error.message : 'حدث خطأ أثناء معالجة التسجيل',
+            variant: "destructive",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+        
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -47,7 +92,6 @@ export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      setIsProcessing(true);
     }
   };
 
@@ -56,7 +100,8 @@ export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
       <Button
         variant={isRecording ? "destructive" : "default"}
         onClick={isRecording ? stopRecording : startRecording}
-        disabled={isProcesing}
+        disabled={isProcessing}
+        className="glass-button"
       >
         {isRecording ? (
           <>
@@ -70,7 +115,7 @@ export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
           </>
         )}
       </Button>
-      {isProcesing && (
+      {isProcessing && (
         <div className="flex items-center">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="mr-2">جاري المعالجة...</span>

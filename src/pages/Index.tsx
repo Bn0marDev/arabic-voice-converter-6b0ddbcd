@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Volume2 } from "lucide-react";
 import { VoiceCard } from "@/components/VoiceCard";
@@ -22,13 +21,13 @@ const API_KEY = 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9';
 
 const Index = () => {
   const [text, setText] = useState('');
-  const [voiceId, setVoiceId] = useState('');
   const [voices, setVoices] = useState<Voice[]>([]);
   const [filteredVoices, setFilteredVoices] = useState<Voice[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [filter, setFilter] = useState<'all' | 'arabic' | 'other'>('all');
+  const [lastGeneratedAudio, setLastGeneratedAudio] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -96,40 +95,15 @@ const Index = () => {
   };
 
   const handleRecordingComplete = async (audioBlob: Blob) => {
-    if (!selectedVoiceId) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء اختيار صوت أولاً",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob);
-      formData.append('model_id', 'eleven_multilingual_v2');
-
-      const response = await fetch(`https://api.elevenlabs.io/v1/voice-generation/${selectedVoiceId}`, {
-        method: 'POST',
-        headers: {
-          'xi-api-key': API_KEY,
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('فشل في معالجة التسجيل الصوتي');
-      }
-
-      toast({
-        title: "تم بنجاح",
-        description: "تم معالجة التسجيل الصوتي بنجاح",
-      });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      setLastGeneratedAudio(audioUrl);
+      const audio = new Audio(audioUrl);
+      await audio.play();
     } catch (error) {
       toast({
         title: "خطأ",
-        description: error instanceof Error ? error.message : 'حدث خطأ أثناء معالجة التسجيل',
+        description: "فشل في تشغيل الصوت المولد",
         variant: "destructive"
       });
     }
@@ -179,6 +153,7 @@ const Index = () => {
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
+      setLastGeneratedAudio(audioUrl);
       const audio = new Audio(audioUrl);
       
       audio.onended = () => {
@@ -193,6 +168,21 @@ const Index = () => {
         variant: "destructive"
       });
       setIsPlaying(false);
+    }
+  };
+
+  const playLastGeneratedAudio = async () => {
+    if (lastGeneratedAudio) {
+      try {
+        const audio = new Audio(lastGeneratedAudio);
+        await audio.play();
+      } catch (error) {
+        toast({
+          title: "خطأ",
+          description: "فشل في تشغيل الصوت",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -217,25 +207,40 @@ const Index = () => {
             dir="rtl"
           />
 
-          <VoiceRecorder onRecordingComplete={handleRecordingComplete} />
+          <VoiceRecorder 
+            onRecordingComplete={handleRecordingComplete}
+            selectedVoiceId={selectedVoiceId}
+          />
 
-          <Button 
-            onClick={convertTextToSpeech} 
-            disabled={isPlaying} 
-            className="w-full glass"
-          >
-            {isPlaying ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                جاري التشغيل...
-              </>
-            ) : (
-              <>
+          <div className="flex gap-2 justify-center">
+            <Button 
+              onClick={convertTextToSpeech} 
+              disabled={isPlaying} 
+              className="glass"
+            >
+              {isPlaying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  جاري التشغيل...
+                </>
+              ) : (
+                <>
+                  <Volume2 className="mr-2 h-4 w-4" />
+                  تحويل النص إلى كلام
+                </>
+              )}
+            </Button>
+
+            {lastGeneratedAudio && (
+              <Button
+                onClick={playLastGeneratedAudio}
+                className="glass"
+              >
                 <Volume2 className="mr-2 h-4 w-4" />
-                تشغيل الصوت
-              </>
+                إعادة تشغيل آخر صوت
+              </Button>
             )}
-          </Button>
+          </div>
         </div>
 
         <div className="space-y-6">
