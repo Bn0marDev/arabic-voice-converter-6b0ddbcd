@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
-import { Play, Pause, Volume2, VolumeMute } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
 interface AudioPlayerProps {
   audioUrl: string;
@@ -109,7 +109,7 @@ export const AudioPlayer = ({ audioUrl }: AudioPlayerProps) => {
             className="h-8 w-8 rounded-full hover:bg-primary/10"
           >
             {volume === 0 ? (
-              <VolumeMute className="h-4 w-4" />
+              <VolumeX className="h-4 w-4" />
             ) : (
               <Volume2 className="h-4 w-4" />
             )}
