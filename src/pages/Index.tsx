@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { VoiceCard } from "@/components/VoiceCard";
@@ -7,10 +6,11 @@ import { PDFUploader } from "@/components/PDFUploader";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Filter, ChevronUp, Download, Languages, Search, FileText, Volume2, Megaphone } from "lucide-react";
+import { Filter, ChevronUp, Download, Languages, Search, FileText, Volume2, Megaphone, Sun, Moon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface Voice {
   name: string;
@@ -27,6 +27,7 @@ interface Voice {
 const API_KEY = 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9';
 
 const Index = () => {
+  const { theme, setTheme } = useTheme();
   const [voices, setVoices] = useState<Voice[]>([]);
   const [filteredVoices, setFilteredVoices] = useState<Voice[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
@@ -207,32 +208,16 @@ const Index = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6 font-sans ${themePattern !== 'default' ? '' : ''}`} dir="rtl">
+    <div className="min-h-screen bg-background p-6 font-cairo" dir="rtl">
       <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex justify-end space-x-2 rtl:space-x-reverse mb-4">
-          <Button 
-            variant={themePattern === 'default' ? 'default' : 'outline'} 
-            onClick={() => setThemePattern('default')}
-            className="text-sm"
-            size="sm"
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="rounded-full"
           >
-            النمط الافتراضي
-          </Button>
-          <Button 
-            variant={themePattern === 'libya' ? 'default' : 'outline'} 
-            onClick={() => setThemePattern('libya')}
-            className="text-sm"
-            size="sm"
-          >
-            النمط الليبي
-          </Button>
-          <Button 
-            variant={themePattern === 'naari' ? 'default' : 'outline'} 
-            onClick={() => setThemePattern('naari')}
-            className="text-sm"
-            size="sm"
-          >
-            النمط النعاري
+            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </Button>
         </div>
 
