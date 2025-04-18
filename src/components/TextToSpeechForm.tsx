@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { Volume2 } from "lucide-react";
+import { Volume2, Loader2, MessageSquare } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 
 interface TextToSpeechFormProps {
@@ -36,22 +37,62 @@ export const TextToSpeechForm = ({ selectedVoiceId, onConvert, isLoading }: Text
     await onConvert(text);
   };
 
+  // أمثلة من النصوص
+  const textExamples = [
+    "مرحباً بك في محول النص إلى كلام. يمكنك استخدام هذه الخدمة لتحويل النصوص العربية إلى ملفات صوتية.",
+    "السلام عليكم ورحمة الله وبركاته، أهلاً بكم في هذا البرنامج المميز لتحويل النصوص إلى أصوات طبيعية.",
+    "يعد التعلم المستمر أحد أهم مفاتيح النجاح في العصر الحديث، حيث تتسارع التغيرات التكنولوجية بشكل غير مسبوق."
+  ];
+
+  const setExampleText = (example: string) => {
+    setText(example);
+  };
+
   return (
     <div className="space-y-4">
-      <Textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="أدخل النص هنا..."
-        className="min-h-[120px] text-right glass"
-        dir="rtl"
-      />
+      <div className="relative">
+        <Textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="أدخل النص هنا..."
+          className="min-h-[150px] text-right glass resize-none pr-4 pt-4"
+          dir="rtl"
+        />
+        
+        <div className="absolute top-2 left-2">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+      
+      <div className="flex flex-wrap gap-2 mb-2">
+        <div className="text-xs text-muted-foreground mb-1 w-full">أمثلة نصية:</div>
+        {textExamples.map((example, index) => (
+          <button
+            key={index}
+            onClick={() => setExampleText(example)}
+            className="text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300 transition-colors truncate max-w-[180px]"
+          >
+            {example.substring(0, 25)}...
+          </button>
+        ))}
+      </div>
+      
       <Button 
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full"
+        className="w-full glass hover:bg-primary/90 transition-all duration-300 group"
       >
-        <Volume2 className="mr-2 h-4 w-4" />
-        تحويل النص إلى كلام
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            جاري التحويل...
+          </>
+        ) : (
+          <>
+            <Volume2 className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+            تحويل النص إلى كلام
+          </>
+        )}
       </Button>
     </div>
   );
