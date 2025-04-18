@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { VoiceCard } from "@/components/VoiceCard";
 import { TextToSpeechForm } from "@/components/TextToSpeechForm";
-import { PDFUploader } from "@/components/PDFUploader";
+import { FavoriteVoices } from "@/components/FavoriteVoices";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Filter, ChevronUp, Download, Languages, Search, FileText, Volume2, Megaphone, Sun, Moon } from "lucide-react";
+import { Filter, ChevronUp, Download, Languages, Search, FileText, Volume2, Megaphone, Sun, Moon, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTheme } from "@/components/ThemeProvider";
+import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
 
 interface Voice {
   name: string;
@@ -41,6 +42,8 @@ const Index = () => {
   
   const { toast } = useToast();
 
+  useWelcomeMessage();
+
   useEffect(() => {
     fetchVoices();
   }, []);
@@ -50,7 +53,6 @@ const Index = () => {
   }, [voices, filter, searchQuery]);
 
   useEffect(() => {
-    // تطبيق النمط على الصفحة الرئيسية
     const body = document.body;
     body.classList.remove('libya-pattern-1', 'naari-pattern-1');
     
@@ -90,7 +92,6 @@ const Index = () => {
   const filterAndSearchVoices = () => {
     let result = voices;
     
-    // تطبيق فلتر اللغة
     if (filter === 'arabic') {
       result = result.filter(voice => 
         voice.labels?.language?.toLowerCase() === 'arabic' || 
@@ -103,7 +104,6 @@ const Index = () => {
       );
     }
     
-    // تطبيق البحث
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(voice => 
@@ -221,20 +221,19 @@ const Index = () => {
           </Button>
         </div>
 
-        <div className="text-center space-y-2 animate-fade-in">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white flex items-center justify-center">
-            <Megaphone className="h-10 w-10 ml-2 text-primary animate-gentle-pulse" />
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-foreground flex items-center justify-center">
+            <Megaphone className="h-10 w-10 ml-2 text-primary" />
             محول النص إلى كلام
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-muted-foreground">
             حول النص إلى كلام باستخدام تقنية ElevenLabs - لصناع المحتوى
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* الجانب الأيمن - معلومات الصوت المختار والصور */}
           <div className="md:col-span-1 space-y-6">
-            <Card className="overflow-hidden border-primary/20 animate-scale-in shadow-lg">
+            <Card className="overflow-hidden border-primary/20 animate-scale-in">
               <CardContent className="p-6 space-y-4">
                 <h2 className="text-xl font-bold flex items-center">
                   <Volume2 className="h-5 w-5 ml-2 text-primary" />
@@ -272,31 +271,34 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            {/* مساحة للصور */}
-            <div className="glass rounded-2xl border border-primary/20 overflow-hidden shadow-lg animate-fade-in animation-delay-500">
+            <div className="glass rounded-2xl border border-primary/20 overflow-hidden shadow-lg">
               <div className="aspect-square bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center p-4">
-                <div className="text-center space-y-3">
-                  <div className="w-24 h-24 bg-white/30 dark:bg-white/10 rounded-full mx-auto flex items-center justify-center">
-                    <Volume2 className="h-10 w-10 text-primary/70" />
-                  </div>
+                <img 
+                  src="/lovable-uploads/04cece51-8bad-4144-81ad-c0a1a8f3f43c.png" 
+                  alt="تحويل النص إلى صوت"
+                  className="w-full h-auto object-contain"
+                />
+                <div className="text-center mt-4 space-y-2">
                   <p className="text-gray-700 dark:text-gray-300 font-medium">صناعة المحتوى الصوتي</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">أنشئ مقاطع صوتية بجودة عالية لمحتواك</p>
                 </div>
               </div>
             </div>
             
-            <div className="glass rounded-2xl border border-primary/20 overflow-hidden shadow-lg animate-fade-in animation-delay-1000">
+            <div className="glass rounded-2xl border border-primary/20 overflow-hidden shadow-lg">
               <div className="aspect-video bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900/30 dark:to-teal-900/30 flex items-center justify-center p-4">
-                <div className="text-center space-y-3">
-                  <div className="w-20 h-20 bg-white/30 dark:bg-white/10 rounded-full mx-auto flex items-center justify-center">
-                    <Megaphone className="h-8 w-8 text-primary/70" />
-                  </div>
+                <img 
+                  src="/lovable-uploads/69fc8222-f52c-43f1-89be-3c4804a534e8.png" 
+                  alt="وصول أوسع"
+                  className="w-full h-auto object-contain"
+                />
+                <div className="text-center mt-4 space-y-2">
                   <p className="text-gray-700 dark:text-gray-300 font-medium">وصول أوسع للمحتوى</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">اجعل محتواك في متناول الجميع</p>
                 </div>
               </div>
             </div>
-            
+
             {audioUrl && (
               <div className="space-y-4 animate-scale-in sticky top-6">
                 <h3 className="text-lg font-semibold flex items-center">
@@ -313,7 +315,6 @@ const Index = () => {
             )}
           </div>
           
-          {/* الجانب الأيسر - أدوات التحويل */}
           <div className="md:col-span-2 space-y-6">
             <Card className="overflow-hidden border-primary/20 animate-scale-in shadow-lg">
               <CardContent className="p-6 space-y-6">
@@ -323,9 +324,9 @@ const Index = () => {
                       <FileText className="h-4 w-4 ml-2" />
                       تحويل النص
                     </TabsTrigger>
-                    <TabsTrigger value="pdf" className="flex items-center">
-                      <FileText className="h-4 w-4 ml-2" />
-                      تحويل PDF
+                    <TabsTrigger value="favorites" className="flex items-center">
+                      <Clock className="h-4 w-4 ml-2" />
+                      الأصوات المفضلة
                     </TabsTrigger>
                   </TabsList>
                   
@@ -337,8 +338,8 @@ const Index = () => {
                     />
                   </TabsContent>
                   
-                  <TabsContent value="pdf" className="space-y-4">
-                    <PDFUploader onTextExtracted={handleTextToSpeech} audioUrl={audioUrl} />
+                  <TabsContent value="favorites" className="space-y-4">
+                    <FavoriteVoices />
                   </TabsContent>
                 </Tabs>
               </CardContent>
@@ -423,7 +424,7 @@ const Index = () => {
                 
                 <div className="flex justify-between text-sm text-muted-foreground pt-2 border-t">
                   <span>إجمالي الأصوات: {filteredVoices.length}</span>
-                  <Badge variant="outline">{filter === 'all' ? 'كل الأصوات' : filter === 'arabic' ? 'العربية فقط' : 'لغات أخرى'}</Badge>
+                  <Badge variant="outline">{filter === 'all' ? 'كل الأص��ات' : filter === 'arabic' ? 'العربية فقط' : 'لغات أخرى'}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -432,7 +433,7 @@ const Index = () => {
       </div>
       
       {isConverting && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl flex flex-col items-center">
             <div className="animate-spin h-12 w-12 mb-4 border-4 border-primary border-t-transparent rounded-full"></div>
             <p className="text-lg font-medium">جاري تحويل النص إلى صوت...</p>
