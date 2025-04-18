@@ -2,14 +2,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, SkipForward, SkipBack, Download } from 'lucide-react';
 
 interface AudioPlayerProps {
   audioUrl: string;
   onDownload?: () => void;
 }
 
-export const AudioPlayer = ({ audioUrl }: AudioPlayerProps) => {
+export const AudioPlayer = ({ audioUrl, onDownload }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -68,6 +68,22 @@ export const AudioPlayer = ({ audioUrl }: AudioPlayerProps) => {
     setVolume(newVolume);
   };
 
+  const skipForward = () => {
+    if (audioRef.current) {
+      const newTime = Math.min(audioRef.current.currentTime + 10, duration);
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  const skipBackward = () => {
+    if (audioRef.current) {
+      const newTime = Math.max(audioRef.current.currentTime - 10, 0);
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
   // تنسيق الوقت
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -76,16 +92,36 @@ export const AudioPlayer = ({ audioUrl }: AudioPlayerProps) => {
   };
 
   return (
-    <div className="glass rounded-lg p-4 space-y-2 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={togglePlay}
-          className="h-10 w-10 rounded-full bg-primary/10 hover:bg-primary/20 text-primary"
-        >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-        </Button>
+    <div className="glass rounded-lg p-4 space-y-2 animate-fade-in shadow-md border border-primary/20">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={skipBackward}
+            className="h-8 w-8 rounded-full hover:bg-primary/10"
+          >
+            <SkipBack className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="default" 
+            size="icon" 
+            onClick={togglePlay}
+            className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+          >
+            {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={skipForward}
+            className="h-8 w-8 rounded-full hover:bg-primary/10"
+          >
+            <SkipForward className="h-4 w-4" />
+          </Button>
+        </div>
         
         <div className="flex-1 mx-4">
           <Slider
@@ -101,7 +137,7 @@ export const AudioPlayer = ({ audioUrl }: AudioPlayerProps) => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -121,6 +157,17 @@ export const AudioPlayer = ({ audioUrl }: AudioPlayerProps) => {
             onValueChange={handleVolumeChange}
             className="w-20"
           />
+          
+          {onDownload && (
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={onDownload}
+              className="h-8 w-8 rounded-full hover:bg-primary/10"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
