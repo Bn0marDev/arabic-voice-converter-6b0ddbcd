@@ -2,7 +2,6 @@
 import { Link } from "react-router-dom";
 import { Home, Volume2, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { useTheme } from "./ThemeProvider";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
@@ -81,7 +80,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       <footer className="border-t py-6 md:py-0">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4 md:h-14">
           <p className="text-sm text-muted-foreground">
-            © 2025 محول النص إلى كلام. جميع الحقوق محفوظة.
+            © 2025 محول النص إلى كلام
           </p>
           <div className="flex items-center gap-4">
             <ThemeToggle />

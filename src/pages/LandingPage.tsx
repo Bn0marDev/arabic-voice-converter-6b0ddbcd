@@ -13,7 +13,7 @@ const LandingPage = () => {
             <div className="space-y-6">
               <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary mb-2">
                 <Megaphone className="h-4 w-4 ml-1" />
-                تقنية ElevenLabs
+                تحويل النص إلى كلام
               </div>
               
               <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tighter">
@@ -56,20 +56,19 @@ const LandingPage = () => {
             </div>
             
             <div className="relative">
-              <div className="relative z-10 rounded-xl overflow-hidden border shadow-lg aspect-square md:aspect-video">
+              <div className="relative z-10 rounded-xl overflow-hidden border shadow-lg aspect-square md:aspect-auto md:h-[500px]">
                 <img
                   src="/lovable-uploads/043bbd74-e203-4dfb-ab25-2e508102fd8c.png"
-                  alt="AI Voice Assistant"
+                  alt="محول النص إلى كلام"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -z-10 blur-[32px] opacity-25 -inset-4 bg-gradient-to-r from-primary to-primary-foreground"></div>
             </div>
           </div>
         </div>
       </section>
       
-      <section id="features" className="py-12 md:py-20 bg-muted/50">
+      <section id="features" className="py-12 md:py-20">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-3xl font-bold mb-4">المميزات الرئيسية</h2>
@@ -79,30 +78,30 @@ const LandingPage = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-card rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-card rounded-xl overflow-hidden">
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2">صناعة المحتوى الصوتي</h3>
                 <p className="text-muted-foreground mb-4">أنشئ مقاطع صوتية بجودة عالية لمحتواك</p>
               </div>
-              <div className="aspect-video bg-gradient-to-r from-blue-100/30 to-teal-100/30 dark:from-blue-900/10 dark:to-teal-900/10 flex items-center justify-center p-4 relative">
+              <div className="aspect-video h-[350px] flex items-center justify-center p-4 relative">
                 <img 
                   src="/lovable-uploads/04cece51-8bad-4144-81ad-c0a1a8f3f43c.png" 
                   alt="صناعة المحتوى الصوتي"
-                  className="max-h-48 object-contain"
+                  className="max-h-full object-contain"
                 />
               </div>
             </div>
             
-            <div className="bg-card rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-card rounded-xl overflow-hidden">
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2">وصول أوسع للمحتوى</h3>
                 <p className="text-muted-foreground mb-4">اجعل محتواك في متناول الجميع</p>
               </div>
-              <div className="aspect-video bg-gradient-to-r from-purple-100/30 to-pink-100/30 dark:from-purple-900/10 dark:to-pink-900/10 flex items-center justify-center p-4">
+              <div className="aspect-video h-[350px] flex items-center justify-center p-4">
                 <img 
                   src="/lovable-uploads/69fc8222-f52c-43f1-89be-3c4804a534e8.png" 
                   alt="وصول أوسع"
-                  className="max-h-48 object-contain"
+                  className="max-h-full object-contain"
                 />
               </div>
             </div>
