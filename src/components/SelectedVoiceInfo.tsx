@@ -4,6 +4,7 @@ import { Volume2 } from "lucide-react";
 
 interface Voice {
   name: string;
+  voice_id: string;
   labels?: {
     language?: string;
     accent?: string;

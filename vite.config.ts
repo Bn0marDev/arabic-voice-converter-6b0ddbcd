@@ -1,22 +1,23 @@
 
 import { defineConfig } from "vite";
 import path from "path";
-import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    port: 8080
+  },
   esbuild: {
-    target: 'esnext'
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+    target: 'es2020'
   },
   optimizeDeps: {
-    esbuildOptions: {
-      target: 'esnext'
-    },
     exclude: ['@swc/core'],
   },
 });
