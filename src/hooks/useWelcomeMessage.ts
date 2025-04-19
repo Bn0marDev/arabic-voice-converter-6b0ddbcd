@@ -4,9 +4,9 @@ import { useToast } from './use-toast';
 
 const WELCOME_MESSAGE = "مرحباً بك في محول النص إلى كلام. يمكنك استخدام هذه الخدمة لتحويل النصوص العربية إلى ملفات صوتية.";
 const VOICES = [
-  "9BWtsMINqrJLrRacOk9x", // Aria
-  "CwhRBWXzGAHq8TQ4Fs17", // Roger
-  "EXAVITQu4vr4xnSDxMaL", // Sarah
+  "9BWtsMINqrJLrRacOk9x",
+  "CwhRBWXzGAHq8TQ4Fs17",
+  "EXAVITQu4vr4xnSDxMaL",
 ];
 
 export const useWelcomeMessage = () => {
