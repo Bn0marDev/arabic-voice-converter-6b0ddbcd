@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Play, Pause, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -9,6 +8,9 @@ interface VoicePreviewProps {
   onPlay: (url: string) => void;
 }
 
+// Keep track of current audio element globally to avoid multiple playbacks
+let currentAudio: HTMLAudioElement | null = null;
+
 export const VoicePreview = ({ previewUrl, onPlay }: VoicePreviewProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,10 +19,10 @@ export const VoicePreview = ({ previewUrl, onPlay }: VoicePreviewProps) => {
 
   const handlePlay = async () => {
     if (isPlaying) {
-      // إيقاف الصوت الحالي
-      const audio = document.querySelector("audio");
-      if (audio) {
-        audio.pause();
+      // Stop current playback
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
       }
       setIsPlaying(false);
       return;
@@ -28,18 +30,22 @@ export const VoicePreview = ({ previewUrl, onPlay }: VoicePreviewProps) => {
 
     setIsLoading(true);
     try {
-      // إيقاف أي صوت آخر قيد التشغيل
-      const playingAudio = document.querySelector("audio");
-      if (playingAudio) {
-        playingAudio.pause();
+      // Stop any other playing audio first
+      if (currentAudio) {
+        currentAudio.pause();
       }
 
-      // إنشاء عنصر صوت جديد
+      // Create new audio element
       const audio = new Audio(previewUrl);
-      audio.addEventListener("ended", () => setIsPlaying(false));
-      audio.addEventListener("play", () => setIsPlaying(true));
-      await audio.play();
+      currentAudio = audio;
       
+      audio.addEventListener("ended", () => {
+        setIsPlaying(false);
+        currentAudio = null;
+      });
+      
+      await audio.play();
+      setIsPlaying(true);
       onPlay(previewUrl);
     } catch (error) {
       console.error("Error playing audio:", error);

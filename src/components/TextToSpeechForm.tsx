@@ -55,7 +55,7 @@ export const TextToSpeechForm = ({ selectedVoiceId, onConvert, isLoading }: Text
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="أدخل النص هنا..."
-          className="min-h-[150px] text-right glass resize-none pr-4 pt-4"
+          className="min-h-[150px] text-right resize-none pr-4 pt-4"
           dir="rtl"
         />
         
@@ -80,7 +80,7 @@ export const TextToSpeechForm = ({ selectedVoiceId, onConvert, isLoading }: Text
       <Button 
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full glass hover:bg-primary/90 transition-all duration-300 group"
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all duration-300"
       >
         {isLoading ? (
           <>
@@ -89,7 +89,7 @@ export const TextToSpeechForm = ({ selectedVoiceId, onConvert, isLoading }: Text
           </>
         ) : (
           <>
-            <Volume2 className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+            <Volume2 className="mr-2 h-4 w-4" />
             تحويل النص إلى كلام
           </>
         )}
