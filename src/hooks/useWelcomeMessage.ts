@@ -45,6 +45,7 @@ export const useWelcomeMessage = () => {
           localStorage.setItem('welcomePlayed', 'true');
           setHasPlayed(true);
         } catch (error) {
+          console.error('Error playing welcome message:', error);
           toast({
             title: "تنبيه",
             description: "تعذر تشغيل رسالة الترحيب",

@@ -70,7 +70,7 @@ export const TextToSpeechForm = ({ selectedVoiceId, onConvert, isLoading }: Text
           <button
             key={index}
             onClick={() => setExampleText(example)}
-            className="text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300 transition-colors truncate max-w-[180px]"
+            className="text-xs bg-accent hover:bg-accent/80 dark:bg-accent dark:hover:bg-accent/80 px-2 py-1 rounded text-accent-foreground transition-colors truncate max-w-[180px]"
           >
             {example.substring(0, 25)}...
           </button>
