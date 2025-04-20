@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserProfileButton } from "./UserProfileButton";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +14,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
   
   return (
     <div className="min-h-screen bg-background font-cairo relative">
@@ -43,9 +46,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button asChild size="sm" className="hidden md:flex">
-              <Link to="/app">ابدأ الآن</Link>
-            </Button>
+            {user ? (
+              <UserProfileButton />
+            ) : (
+              <Button asChild size="sm" className="hidden md:flex">
+                <Link to="/login">تسجيل الدخول</Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -69,6 +76,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               <Volume2 className="h-5 w-5" />
               <span>محول النص</span>
             </Link>
+            {!user && (
+              <Link 
+                to="/login" 
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-accent mt-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span>تسجيل الدخول</span>
+              </Link>
+            )}
           </nav>
         </div>
       )}
