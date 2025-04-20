@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { TextToSpeechForm } from "@/components/TextToSpeechForm";
 import { FavoriteVoices } from "@/components/FavoriteVoices";
@@ -30,9 +29,37 @@ const Index = () => {
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isConverting, setIsConverting] = useState(false);
+  const [voices, setVoices] = useState<Voice[]>([]);
   const { toast } = useToast();
   
   useWelcomeMessage();
+
+  useEffect(() => {
+    fetchVoices();
+  }, []);
+
+  const fetchVoices = async () => {
+    try {
+      const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+        headers: {
+          'xi-api-key': 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(response.status === 401 ? 'مفتاح API غير صالح' : 'فشل في جلب الأصوات');
+      }
+
+      const data = await response.json();
+      setVoices(data.voices);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: error instanceof Error ? error.message : 'حدث خطأ',
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleTextToSpeech = async (text: string) => {
     try {
@@ -156,7 +183,7 @@ const Index = () => {
             </div>
 
             <div className="lg:col-span-1 space-y-4">
-              <SelectedVoiceInfo selectedVoiceId={selectedVoiceId} voices={[]} />
+              <SelectedVoiceInfo selectedVoiceId={selectedVoiceId} voices={voices} />
 
               {audioUrl && (
                 <div className="space-y-4 animate-scale-in sticky top-6">
@@ -167,9 +194,7 @@ const Index = () => {
                         الصوت المحول
                       </h3>
                       <AudioPlayer audioUrl={audioUrl} onDownload={handleDownload} />
-                      <Button onClick={handleDownload} variant="outline" className="w-full gap
-
--2">
+                      <Button onClick={handleDownload} variant="outline" className="w-full gap-2">
                         <Download className="h-4 w-4" />
                         تحميل الملف الصوتي
                       </Button>

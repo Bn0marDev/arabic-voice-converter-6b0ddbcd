@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "./ui/card";
 import { Volume2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Voice {
   name: string;
@@ -17,7 +18,17 @@ interface SelectedVoiceInfoProps {
 }
 
 export const SelectedVoiceInfo = ({ selectedVoiceId, voices }: SelectedVoiceInfoProps) => {
-  const selectedVoice = voices.find(v => v.voice_id === selectedVoiceId);
+  const [selectedVoice, setSelectedVoice] = useState<Voice | undefined>(undefined);
+
+  useEffect(() => {
+    // تحديث الصوت المحدد عندما تتغير القائمة أو معرف الصوت المحدد
+    if (selectedVoiceId && voices.length > 0) {
+      const voice = voices.find(v => v.voice_id === selectedVoiceId);
+      setSelectedVoice(voice);
+    } else {
+      setSelectedVoice(undefined);
+    }
+  }, [selectedVoiceId, voices]);
 
   return (
     <Card className="overflow-hidden">
