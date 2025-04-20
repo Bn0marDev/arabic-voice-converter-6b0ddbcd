@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { Mic, Square, Loader2 } from "lucide-react";
@@ -54,7 +55,12 @@ export const VoiceRecorder = ({ onRecordingComplete, selectedVoiceId }: VoiceRec
           });
 
           if (!response.ok) {
-            throw new Error('فشل في معالجة التسجيل الصوتي');
+            const errorData = await response.json();
+            // معالجة خطأ تجاوز الحصة بشكل خاص
+            if (errorData.detail?.status === "quota_exceeded") {
+              throw new Error('تم تجاوز الحصة المخصصة لمفتاح API. يرجى استخدام مفتاح آخر أو ترقية الخطة الحالية.');
+            }
+            throw new Error(errorData.detail?.message || 'فشل في معالجة التسجيل الصوتي');
           }
 
           const resultBlob = await response.blob();
@@ -70,6 +76,7 @@ export const VoiceRecorder = ({ onRecordingComplete, selectedVoiceId }: VoiceRec
             description: error instanceof Error ? error.message : 'حدث خطأ أثناء معالجة التسجيل',
             variant: "destructive",
           });
+          console.error("خطأ في معالجة التسجيل الصوتي:", error);
         } finally {
           setIsProcessing(false);
         }

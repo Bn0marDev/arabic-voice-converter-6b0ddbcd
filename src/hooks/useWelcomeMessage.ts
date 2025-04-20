@@ -36,7 +36,17 @@ export const useWelcomeMessage = () => {
             })
           });
 
-          if (!response.ok) throw new Error('فشل في تشغيل رسالة الترحيب');
+          if (!response.ok) {
+            // فحص خطأ تجاوز الحصة
+            const errorData = await response.json();
+            if (errorData.detail?.status === "quota_exceeded") {
+              console.warn("تم تجاوز الحصة المخصصة لمفتاح API عند تشغيل رسالة الترحيب");
+              localStorage.setItem('welcomePlayed', 'true'); // تخطي محاولة التشغيل مستقبلاً
+              setHasPlayed(true);
+              return;
+            }
+            throw new Error('فشل في تشغيل رسالة الترحيب');
+          }
 
           const audioBlob = await response.blob();
           const audio = new Audio(URL.createObjectURL(audioBlob));

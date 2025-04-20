@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { TextToSpeechForm } from "@/components/TextToSpeechForm";
@@ -97,7 +98,14 @@ const Index = () => {
       });
 
       if (!response.ok) {
-        throw new Error('خطأ في الخادم');
+        const errorData = await response.json();
+        
+        // معالجة خطأ تجاوز الحصة بشكل خاص
+        if (errorData.detail?.status === "quota_exceeded") {
+          throw new Error('تم تجاوز الحصة المخصصة لمفتاح API. يرجى استخدام مفتاح آخر أو ترقية الخطة الحالية.');
+        }
+        
+        throw new Error(errorData.detail?.message || 'خطأ في الخادم');
       }
 
       const audioBlob = await response.blob();
@@ -115,6 +123,7 @@ const Index = () => {
         description: error instanceof Error ? error.message : 'حدث خطأ',
         variant: "destructive"
       });
+      console.error("خطأ في تحويل النص إلى كلام:", error);
     } finally {
       setIsConverting(false);
     }
