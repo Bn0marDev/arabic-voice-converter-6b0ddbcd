@@ -1,12 +1,10 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { 
   User, 
-  signInWithPopup, 
   signOut as firebaseSignOut,
   onAuthStateChanged 
 } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, signInWithGooglePopup } from "@/lib/firebase";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
@@ -35,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithGooglePopup();
       toast({
         title: "تم تسجيل الدخول بنجاح",
         description: `مرحباً، ${result.user.displayName}`,

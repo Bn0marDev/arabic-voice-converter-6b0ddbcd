@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { TextToSpeechForm } from "@/components/TextToSpeechForm";
@@ -13,6 +12,7 @@ import { MainLayout } from "@/components/MainLayout";
 import { VoicesList } from "@/components/VoicesList";
 import { SelectedVoiceInfo } from "@/components/SelectedVoiceInfo";
 import { ConversionOverlay } from "@/components/ConversionOverlay";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Voice {
   name: string;
@@ -41,9 +41,13 @@ const Index = () => {
 
   const fetchVoices = async () => {
     try {
+      const { data: { ELEVEN_LABS_API_KEY } } = await supabase.functions.invoke('get-secret', {
+        body: { secret_name: 'ELEVEN_LABS_API_KEY' }
+      });
+      
       const response = await fetch('https://api.elevenlabs.io/v1/voices', {
         headers: {
-          'xi-api-key': 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9'
+          'xi-api-key': ELEVEN_LABS_API_KEY
         }
       });
 
@@ -80,11 +84,15 @@ const Index = () => {
         description: "يرجى الانتظار بينما نقوم بتحويل النص إلى كلام",
       });
       
+      const { data: { ELEVEN_LABS_API_KEY } } = await supabase.functions.invoke('get-secret', {
+        body: { secret_name: 'ELEVEN_LABS_API_KEY' }
+      });
+      
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}`, {
         method: 'POST',
         headers: {
           'Accept': 'audio/mpeg',
-          'xi-api-key': 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9',
+          'xi-api-key': ELEVEN_LABS_API_KEY,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -100,7 +108,6 @@ const Index = () => {
       if (!response.ok) {
         const errorData = await response.json();
         
-        // معالجة خطأ تجاوز الحصة بشكل خاص
         if (errorData.detail?.status === "quota_exceeded") {
           throw new Error('تم تجاوز الحصة المخصصة لمفتاح API. يرجى استخدام مفتاح آخر أو ترقية الخطة الحالية.');
         }

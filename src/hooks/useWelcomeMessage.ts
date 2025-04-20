@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from './use-toast';
+import { supabase } from "@/integrations/supabase/client";
 
 const WELCOME_MESSAGE = "مرحباً بك في محول النص إلى كلام. يمكنك استخدام هذه الخدمة لتحويل النصوص العربية إلى ملفات صوتية.";
 const VOICES = [
@@ -18,12 +19,17 @@ export const useWelcomeMessage = () => {
     if (!hasWelcomePlayed && !hasPlayed) {
       const playWelcome = async () => {
         try {
+          // Get API key from Supabase secrets
+          const { data: { ELEVEN_LABS_API_KEY } } = await supabase.functions.invoke('get-secret', {
+            body: { secret_name: 'ELEVEN_LABS_API_KEY' }
+          });
+          
           const randomVoice = VOICES[Math.floor(Math.random() * VOICES.length)];
           const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${randomVoice}`, {
             method: 'POST',
             headers: {
               'Accept': 'audio/mpeg',
-              'xi-api-key': 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9',
+              'xi-api-key': ELEVEN_LABS_API_KEY,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
