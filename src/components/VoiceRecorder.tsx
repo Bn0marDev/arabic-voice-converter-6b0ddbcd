@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { Mic, Square, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VoiceRecorderProps {
   onRecordingComplete: (audioBlob: Blob) => void;
@@ -42,6 +43,10 @@ export const VoiceRecorder = ({ onRecordingComplete, selectedVoiceId }: VoiceRec
         setIsProcessing(true);
         
         try {
+          const { data: { ELEVEN_LABS_API_KEY } } = await supabase.functions.invoke('get-secret', {
+            body: { secret_name: 'ELEVEN_LABS_API_KEY' }
+          });
+
           const formData = new FormData();
           formData.append('audio', audioBlob);
           formData.append('model_id', 'eleven_multilingual_v2');
@@ -49,14 +54,13 @@ export const VoiceRecorder = ({ onRecordingComplete, selectedVoiceId }: VoiceRec
           const response = await fetch(`https://api.elevenlabs.io/v1/voice-generation/${selectedVoiceId}`, {
             method: 'POST',
             headers: {
-              'xi-api-key': 'sk_53335c6f855ee582fac086690b4c039d3e100fbd2992c3a9',
+              'xi-api-key': ELEVEN_LABS_API_KEY,
             },
             body: formData
           });
 
           if (!response.ok) {
             const errorData = await response.json();
-            // معالجة خطأ تجاوز الحصة بشكل خاص
             if (errorData.detail?.status === "quota_exceeded") {
               throw new Error('تم تجاوز الحصة المخصصة لمفتاح API. يرجى استخدام مفتاح آخر أو ترقية الخطة الحالية.');
             }
